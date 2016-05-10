@@ -1,6 +1,8 @@
-package pl.finder.elmer;
+package pl.finder.elmer.serialization;
 
 import java.lang.reflect.Type;
+
+import pl.finder.elmer.SerializationException;
 
 
 public interface MessageSerializer {

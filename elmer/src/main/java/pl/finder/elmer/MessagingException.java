@@ -6,7 +6,7 @@ package pl.finder.elmer;
 @SuppressWarnings("serial")
 public class MessagingException extends RuntimeException {
 
-	public MessagingException(final String message, final Throwable cause) {
-		super(message, cause);
-	}
+    public MessagingException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 }
