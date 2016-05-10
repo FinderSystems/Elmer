@@ -25,7 +25,7 @@ public final class DurationExtensions {
      *
      * @return true greater or equal, false otherwise
      */
-    public static boolean isGreaterOrEquals(final Duration source, final Duration target) {
+    public static boolean isGreaterOrEqual(final Duration source, final Duration target) {
         return source.compareTo(target) >= 0;
     }
 
@@ -43,7 +43,7 @@ public final class DurationExtensions {
      *
      * @return true lower or equal, false otherwise
      */
-    public static boolean isLowerOrEqualsThan(final Duration source, final Duration target) {
+    public static boolean isLowerOrEqual(final Duration source, final Duration target) {
         return source.compareTo(target) <= 0;
     }
 }

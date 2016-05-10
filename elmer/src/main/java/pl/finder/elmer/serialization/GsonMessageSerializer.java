@@ -48,7 +48,7 @@ public final class GsonMessageSerializer implements MessageSerializer {
             writer.flush();
             return output.toByteArray();
         } catch (final IOException | JsonIOException e) {
-            throw new SerializationException(String.format("Could not serialize: '%s'",
+            throw new SerializationException(String.format("Could not serialize message: '%s'",
                     message), e);
         }
     }
@@ -59,7 +59,7 @@ public final class GsonMessageSerializer implements MessageSerializer {
                 final Reader reader = new InputStreamReader(inputStream, encoding)) {
             return gson.fromJson(reader, type);
         } catch (final IOException | JsonParseException e) {
-            throw new SerializationException(String.format("Could not serialize: '%s'",
+            throw new SerializationException(String.format("Could not deserialize message: '%s'",
                     new String(message)), e);
         }
     }

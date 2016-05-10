@@ -40,7 +40,7 @@ final class RabbitTopologyConfigurator implements TopologyConfigurator {
         checkArgument(exchange != null, "Exchange definition not specified");
         try {
             debug(log, () -> String.format("Declaring: %s", exchange));
-            channel.exchangeDeclare(exchange.name(), exchange.type().name(), exchange.durable(),
+            channel.exchangeDeclare(exchange.name(), exchange.type().name().toLowerCase(), exchange.durable(),
                     exchange.autoDeletable(), exchange.internal(), argumentsOf(exchange));
             return this;
         } catch (final IOException e) {
