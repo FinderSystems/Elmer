@@ -83,7 +83,7 @@ final class DefaultPublishConfigurator implements PublishConfigurator {
 
         @Override
         public void messagesByRoutingKey(final Multimap<String, Object> messages)
-                throws MessagingException {
+                throws ChannelException {
             final PublishConfig.Builder configBuilder = publishConfigBuilder();
             for (final String routingKey : messages.keySet()) {
                 for (final Object message : messages.get(routingKey)) {

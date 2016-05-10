@@ -69,7 +69,9 @@ public final class QueueDefinition {
         public QueueDefinition create() {
             checkArgument(!isNullOrEmpty(name), "Queue name not specified");
             return new QueueDefinition(name, passive, durable, exclusive,
-                    autoDeletable, messageExpirationTime, expirationTime,
+                    autoDeletable,
+                    messageExpirationTime != null ? messageExpirationTime : Duration.ZERO,
+                    expirationTime != null ? expirationTime : Duration.ZERO,
                     maximumCapacity, maximumCapacityBytes);
         }
     }

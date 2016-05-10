@@ -69,18 +69,18 @@ public interface PublishConfigurator {
          * Publishes message.
          *
          * @param message published message body
-         * @throws MessagingException
+         * @throws ChannelException
          */
         <TMessage> void message(TMessage message)
-                throws MessagingException;
+                throws ChannelException;
 
         /**
          * Publishes messages mapped by routing key.
          *
          * @param messages messages with routing key as key
-         * @throws MessagingException
+         * @throws ChannelException
          */
-        void messagesByRoutingKey(Multimap<String, Object> messages) throws MessagingException;
+        void messagesByRoutingKey(Multimap<String, Object> messages) throws ChannelException;
 
         /**
          * Appends header of published message.
@@ -110,9 +110,9 @@ public interface PublishConfigurator {
          * Publishes given messages.
          *
          * @param messages collection of messages to publish
-         * @throws MessagingException
+         * @throws ChannelException
          */
-        default <TMessage> void messages(Iterable<TMessage> messages) throws MessagingException {
+        default <TMessage> void messages(Iterable<TMessage> messages) throws ChannelException {
             for (TMessage message : messages) {
                 message(message);
             }

@@ -22,6 +22,7 @@ public final class ExchangeDefinition {
     private final boolean passive;
     private final boolean durable;
     private final boolean autoDeletable;
+    private final boolean internal;
     private final boolean delayed;
 
     public static ExchangeDefinition createDefault(final String name) {
@@ -42,6 +43,7 @@ public final class ExchangeDefinition {
                 .passive(passive)
                 .durable(durable)
                 .autoDeletable(autoDeletable)
+                .internal(internal)
                 .deleyed(delayed);
     }
 
@@ -54,13 +56,14 @@ public final class ExchangeDefinition {
          private boolean passive;
          private boolean durable = true;
          private boolean autoDeletable;
+         private boolean internal;
          private boolean deleyed;
 
         public ExchangeDefinition create() {
             checkArgument(!isNullOrEmpty(name), "Exchange name not specified");
             checkArgument(type != null, "Exchange type not specified");
             return new ExchangeDefinition(name, type,
-                    passive, durable, autoDeletable, deleyed);
+                    passive, durable, autoDeletable, internal, deleyed);
         }
     }
 }
