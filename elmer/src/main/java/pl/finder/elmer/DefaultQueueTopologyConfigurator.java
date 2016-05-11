@@ -26,7 +26,7 @@ final class DefaultQueueTopologyConfigurator implements QueueTopologyConfigurato
 
     @Override
     public void delete(final DeleteQueueOptions options) {
-        topology.deleteQueue(queue, options != null ? options : DeleteQueueOptions.empty());
+        topology.deleteQueue(queue, options != null ? options : DeleteQueueOptions.createDefault());
     }
 
     @Override

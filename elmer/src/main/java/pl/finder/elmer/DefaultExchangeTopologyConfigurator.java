@@ -25,7 +25,7 @@ final class DefaultExchangeTopologyConfigurator implements ExchangeTopologyConfi
 
     @Override
     public void delete(final DeleteExchangeOptions options) {
-        topology.deleteExchange(exchange, options != null ? options : DeleteExchangeOptions.empty());
+        topology.deleteExchange(exchange, options != null ? options : DeleteExchangeOptions.createDefault());
     }
 
     @Override

@@ -10,38 +10,35 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Accessors(fluent = true)
 @Getter
+@Accessors(fluent = true)
 @EqualsAndHashCode
 @ToString
-public final class DeleteQueueOptions {
-    private final boolean onlyWhenNotUsed;
-    private final boolean onlyWhenNotEmpty;
+public final class MessageRejectionOption {
+    private final boolean requeue;
 
-    public static DeleteQueueOptions createDefault() {
+    public static MessageRejectionOption createDefault() {
         return builder()
                 .build();
     }
 
-    public static DeleteQueueOptions.Builder builder() {
+    public static MessageRejectionOption.Builder builder() {
         return new Builder();
     }
 
-    public DeleteQueueOptions.Builder with() {
+    public MessageRejectionOption.Builder with() {
         return builder()
-                .onlyWhenNotUsed(onlyWhenNotUsed)
-                .onlyWhenNotEmpty(onlyWhenNotEmpty);
+                .requeue(requeue);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @Setter
     @Accessors(fluent = true)
     public static final class Builder {
-        private boolean onlyWhenNotUsed;
-        private boolean onlyWhenNotEmpty;
+        private boolean requeue;
 
-        public DeleteQueueOptions build() {
-            return new DeleteQueueOptions(onlyWhenNotUsed, onlyWhenNotEmpty);
+        public MessageRejectionOption build() {
+            return new MessageRejectionOption(requeue);
         }
     }
 }

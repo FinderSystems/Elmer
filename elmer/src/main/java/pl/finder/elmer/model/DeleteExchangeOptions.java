@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
 public final class DeleteExchangeOptions {
     private final boolean onlyWhenNotUsed;
 
-    public static DeleteExchangeOptions empty() {
+    public static DeleteExchangeOptions createDefault() {
         return builder()
                 .build();
     }

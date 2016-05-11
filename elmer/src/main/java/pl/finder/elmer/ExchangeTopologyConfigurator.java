@@ -42,7 +42,7 @@ public interface ExchangeTopologyConfigurator {
      * @throws ChannelException
      */
     default void delete() throws ChannelException {
-        delete(DeleteExchangeOptions.empty());
+        delete(DeleteExchangeOptions.createDefault());
     }
 
     /**

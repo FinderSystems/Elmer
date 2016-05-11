@@ -34,7 +34,7 @@ public interface QueueTopologyConfigurator {
      * @throws ChannelException
      */
     default void delete() throws ChannelException {
-        delete(DeleteQueueOptions.empty());
+        delete(DeleteQueueOptions.createDefault());
     }
 
     /**

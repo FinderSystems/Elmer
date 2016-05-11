@@ -121,7 +121,7 @@ public interface TopologyConfigurator {
      */
     default TopologyConfigurator deleteExchange(String exchange)
             throws ChannelException {
-        return deleteExchange(exchange, DeleteExchangeOptions.empty());
+        return deleteExchange(exchange, DeleteExchangeOptions.createDefault());
     }
 
     /**
@@ -160,7 +160,7 @@ public interface TopologyConfigurator {
     */
     default TopologyConfigurator deleteQueue(final String queue)
        throws ChannelException {
-        return deleteQueue(queue, DeleteQueueOptions.empty());
+        return deleteQueue(queue, DeleteQueueOptions.createDefault());
     }
 
     /**
