@@ -32,7 +32,7 @@ public final class SubscriptionConfig {
     public static final class Builder {
         private QueueDefinition queue;
         private ExchangeDefinition bindedExchange;
-        private boolean autoAckEnabled;
+        private boolean autoAckEnabled = true;
 
         public SubscriptionConfig.Builder queue(final QueueDefinition queue) {
             this.queue = queue;

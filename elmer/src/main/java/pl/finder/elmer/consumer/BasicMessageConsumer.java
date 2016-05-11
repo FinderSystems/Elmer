@@ -1,13 +1,14 @@
-package pl.finder.elmer;
+package pl.finder.elmer.consumer;
 
 import pl.finder.elmer.model.Message;
 
 /**
- * Consumer of received messages.
+ * Basic consumer of received messages.
  *
  * @param <TMessageBody> type of message body
  */
-public interface MessageConsumer<TMessageBody> {
+@FunctionalInterface
+public interface BasicMessageConsumer<TMessageBody> {
 
     void onMessage(Message<TMessageBody> message);
 }

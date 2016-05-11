@@ -35,6 +35,8 @@ final class DefaultPublishConfigurator implements PublishConfigurator {
         private final Map<String, String> headers = new HashMap<>();
         private String correlationId;
         private String replyTo;
+        private boolean mandatory;
+        private boolean immediate;
         private String routingKey;
 
         private static PublishToConfigurator ofExchange(final MessageBus bus,
@@ -60,6 +62,18 @@ final class DefaultPublishConfigurator implements PublishConfigurator {
         @Override
         public PublishToConfigurator replyTo(final String replyTo) {
             this.replyTo = replyTo;
+            return this;
+        }
+
+        @Override
+        public PublishToConfigurator mandatory(final boolean mandatory) {
+            this.mandatory = mandatory;
+            return this;
+        }
+
+        @Override
+        public PublishToConfigurator immediate(final boolean immediate) {
+            this.immediate = immediate;
             return this;
         }
 
@@ -100,7 +114,9 @@ final class DefaultPublishConfigurator implements PublishConfigurator {
                     .headers(ImmutableMap.copyOf(headers))
                     .correlationId(correlationId)
                     .replyTo(replyTo)
-                    .routingKey(routingKey);
+                    .routingKey(routingKey)
+                    .mandatory(mandatory)
+                    .immediate(immediate);
             setupTarget.accept(configBuilder);
             return configBuilder;
         }

@@ -79,4 +79,24 @@ final class InternalSerializer implements MessageSerializer {
                     String.format("Message: '%s' has invalid format - expected number", new String(message)), e);
         }
     }
+
+    @Override
+    public <TMessage> String contentTypeOf(final Class<TMessage> messageType) {
+        if (messageType == byte[].class) {
+            return null;
+        } else if (shouldDeserializeToString(messageType)) {
+            return "text/plain";
+        }
+        return serializer.contentTypeOf(messageType);
+    }
+
+    @Override
+    public <TMessage> String encodingOf(final Class<TMessage> messageType) {
+        if (messageType == byte[].class) {
+            return null;
+        } else if (shouldDeserializeToString(messageType)) {
+            return "UTF-8";
+        }
+        return serializer.encodingOf(messageType);
+    }
 }

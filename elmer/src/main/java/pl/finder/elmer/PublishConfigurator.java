@@ -66,6 +66,22 @@ public interface PublishConfigurator {
         PublishToConfigurator withRoutingKey(String routingKey);
 
         /**
+         * Sets mandator flag for published message.
+         *
+         * @param mandatory
+         * @return self
+         */
+        PublishToConfigurator mandatory(boolean mandatory);
+
+        /**
+         * Sets immediate flag for published message.
+         *
+         * @param immediate
+         * @return self
+         */
+        PublishToConfigurator immediate(boolean immediate);
+
+        /**
          * Publishes message.
          *
          * @param message published message body

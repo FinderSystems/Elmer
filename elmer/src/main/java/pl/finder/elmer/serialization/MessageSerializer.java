@@ -7,9 +7,13 @@ import pl.finder.elmer.SerializationException;
 
 public interface MessageSerializer {
 
-	<TMessage> byte[] serialize(TMessage message)
-			throws SerializationException;
+    <TMessage> byte[] serialize(TMessage message)
+            throws SerializationException;
 
-	<TMessage> TMessage deserialize(byte[] message, Type type)
-			throws SerializationException;
+    <TMessage> TMessage deserialize(byte[] message, Type type)
+            throws SerializationException;
+
+    <TMessage> String contentTypeOf(Class<TMessage> messageType);
+
+    <TMessage> String encodingOf(Class<TMessage> messageType);
 }

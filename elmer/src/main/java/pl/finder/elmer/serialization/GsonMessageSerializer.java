@@ -64,5 +64,14 @@ public final class GsonMessageSerializer implements MessageSerializer {
         }
     }
 
+    @Override
+    public <TMessage> String contentTypeOf(final Class<TMessage> messageType) {
+        return "application/json";
+    }
+
+    @Override
+    public <TMessage> String encodingOf(final Class<TMessage> messageType) {
+        return encoding;
+    }
 
 }

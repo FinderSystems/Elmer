@@ -1,51 +1,68 @@
 package pl.finder.elmer;
 
+import static com.google.common.base.Preconditions.checkState;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import pl.finder.elmer.consumer.BasicMessageConsumer;
+import pl.finder.elmer.consumer.MessageConsumer;
 import pl.finder.elmer.model.ExchangeDefinition;
 import pl.finder.elmer.model.QueueDefinition;
 import pl.finder.elmer.model.Subscription;
 import pl.finder.elmer.model.SubscriptionConfig;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 final class DefaultSubscriptionConfigurator implements SubscriptionConfigurator {
-	private final MessageBus bus;
+    private final MessageBus bus;
 
-	@Override
-	public SubscriptionToConfigurator to(final QueueDefinition queue) {
-		return new DefaultSubscriptionToConfigurator(bus, queue);
-	}
+    @Override
+    public SubscriptionToConfigurator to(final QueueDefinition queue) {
+        return new DefaultSubscriptionToConfigurator(bus, queue);
+    }
 
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	private static class DefaultSubscriptionToConfigurator implements SubscriptionToConfigurator {
-		private final MessageBus bus;
-		private final QueueDefinition queue;
-		private ExchangeDefinition bindedExchange;
-		private boolean autoAckEnabled;
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static class DefaultSubscriptionToConfigurator implements SubscriptionToConfigurator {
+        private final MessageBus bus;
+        private final QueueDefinition queue;
+        private ExchangeDefinition bindedExchange;
+        private boolean autoAckEnabled = true;
 
-		@Override
-		public SubscriptionToConfigurator bindedTo(final ExchangeDefinition exchange) {
-			bindedExchange = exchange;
-			return this;
-		}
+        @Override
+        public SubscriptionToConfigurator bindedTo(final ExchangeDefinition exchange) {
+            bindedExchange = exchange;
+            return this;
+        }
 
-		@Override
-		public SubscriptionToConfigurator withAutoAckEnabled() {
-			autoAckEnabled = true;
-			return this;
-		}
+        @Override
+        public SubscriptionToConfigurator withAutoAckDisabled() {
+            autoAckEnabled = false;
+            return this;
+        }
 
-		@Override
-		public <TMessageBody> Subscription using(
-				final MessageConsumer<TMessageBody> consumer) {
-			final SubscriptionConfig config = SubscriptionConfig.builder()
-					.queue(queue)
-					.autoAckEnabled(autoAckEnabled)
-					.bindedExchange(bindedExchange)
-					.build();
-			final Subscription subscription = bus.subscribe(config, consumer);
-			return subscription;
-		}
-	}
+        @Override
+        public <TMessageBody> Subscription using(final MessageConsumer<TMessageBody> consumer) {
+            final SubscriptionConfig config = SubscriptionConfig.builder()
+                    .queue(queue)
+                    .autoAckEnabled(autoAckEnabled)
+                    .bindedExchange(bindedExchange)
+                    .build();
+            final Subscription subscription = bus.subscribe(config, consumer);
+            return subscription;
+        }
+
+        @Override
+        public <TMessageBody> Subscription using(
+                final BasicMessageConsumer<TMessageBody> consumer) {
+            final SubscriptionConfig config = SubscriptionConfig.builder()
+                    .queue(queue)
+                    .autoAckEnabled(autoAckEnabled)
+                    .bindedExchange(bindedExchange)
+                    .build();
+            checkState(config.autoAckEnabled(),
+                    "Could not create subscription to BasicMessageConsumer when auto ACK is disabled");
+            final Subscription subscription = bus.<TMessageBody> subscribe(config, (message, context) ->
+                    consumer.onMessage(message));
+            return subscription;
+        }
+    }
 }

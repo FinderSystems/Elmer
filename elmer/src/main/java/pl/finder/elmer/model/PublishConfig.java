@@ -3,6 +3,7 @@ package pl.finder.elmer.model;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,10 @@ public final class PublishConfig {
     private final String replyTo;
     private final String correlationId;
     private final String routingKey;
-    private final Map<String, String> headers;
+    private final boolean mandatory;
+    private final boolean immediate;
+    private final MessageDeliveryMode deliveryMode;
+    private final Map<String, Object> headers;
 
     public static PublishConfig.Builder builder() {
         return new PublishConfig.Builder();
@@ -42,7 +46,10 @@ public final class PublishConfig {
                 .replyTo(replyTo)
                 .correlationId(correlationId)
                 .routingKey(routingKey)
-                .headers(headers);
+                .mandatory(mandatory)
+                .immediate(immediate)
+                .headersRaw(headers)
+                .deliveryMode(deliveryMode);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -54,7 +61,21 @@ public final class PublishConfig {
         private String replyTo;
         private String correlationId;
         private String routingKey;
-        private Map<String, String> headers = new HashMap<>();
+        private boolean mandatory;
+        private boolean immediate;
+        private MessageDeliveryMode deliveryMode = MessageDeliveryMode.NonPersistent;
+        private Map<String, Object> headers = new HashMap<>();
+
+        private PublishConfig.Builder headersRaw(final Map<String, Object> headers) {
+            this.headers = headers;
+            return this;
+        }
+
+        public PublishConfig.Builder headers(final Map<String, String> headers) {
+            this.headers = headers.entrySet().stream()
+                    .collect(toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+            return this;
+        }
 
         public PublishConfig.Builder withHeader(final String name, final String value) {
             if (headers == null) {
@@ -69,10 +90,10 @@ public final class PublishConfig {
                     "Publish target was not specified: setup exchange or queue.");
             checkState(!isNullOrEmpty(exchange) != !isNullOrEmpty(queue),
                     "Ambiguous publish taget: select exchange or queue");
-            final Map<String, String> publishHeaders = headers != null ?
+            final Map<String, Object> publishHeaders = headers != null ?
                     ImmutableMap.copyOf(headers) : ImmutableMap.of();
             return new PublishConfig(exchange, queue, replyTo, correlationId,
-                    routingKey, publishHeaders);
+                    routingKey, mandatory, immediate, deliveryMode, publishHeaders);
         }
     }
 }
