@@ -1,3 +1,5 @@
+![alt tag](https://github.com/FinderSystems/Elmer/blob/master/logo.png)
+
 # Elmer
 
 ![Build status](https://travis-ci.org/FinderSystems/Elmer.svg?branch=master)
