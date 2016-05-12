@@ -1,6 +1,7 @@
 package pl.finder.elmer.serialization;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.net.MediaType.OCTET_STREAM;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -17,6 +18,7 @@ final class InternalSerializer implements MessageSerializer {
     private static final Map<Type, Function<byte[], Object>> basicDeserializers =
             ImmutableMap.<Type, Function<byte[], Object>> builder()
             .put(byte[].class, message -> message)
+            .put(Byte[].class, message -> toObjectArray(message))
             .put(String.class, message -> new String(message))
             .put(boolean.class, message -> Boolean.parseBoolean(new String(message)))
             .put(Boolean.class, message -> Boolean.parseBoolean(new String(message)))
@@ -35,41 +37,54 @@ final class InternalSerializer implements MessageSerializer {
             .build();
 
     private final MessageSerializer serializer;
+    private final String encoding;
 
     public static MessageSerializer decorate(final MessageSerializer serializer) {
-        return new InternalSerializer(serializer);
+        return decorate(serializer, "UTF-8");
+    }
+
+    public static MessageSerializer decorate(final MessageSerializer serializer, final String encoding) {
+        return new InternalSerializer(serializer, encoding);
     }
 
     @Override
     public <TMessage> byte[] serialize(final TMessage message) throws SerializationException {
         checkArgument(message != null, "Message not specified");
         final Class<?> type = message.getClass();
+        if (serializer.supports(type)) {
+            return serializer.serialize(message);
+        }
         if (type == byte[].class) {
             return (byte[]) message;
-        } else if (shouldDeserializeToString(type)) {
-            return message.toString().getBytes();
+        } else if (type == Byte[].class) {
+            return toPrimitiveArray((Byte[]) message);
         }
-        return serializer.serialize(message);
-    }
-
-    private boolean shouldDeserializeToString(final Class<?> type) {
-        return type.isPrimitive() ||
-                type == String.class ||
-                type == Boolean.class ||
-                Number.class.isAssignableFrom(type);
+        return message.toString().getBytes();
     }
 
     @Override
-    public <TMessage> TMessage deserialize(final byte[] message, Type type) throws SerializationException {
+    public <TMessage> TMessage deserialize(final byte[] message, Class<TMessage> type) throws SerializationException {
+        if (serializer.supports(type)) {
+            return serializer.deserialize(message, type);
+        }
         final Function<byte[], Object> internalDeserializer = basicDeserializers.get(type);
         if (internalDeserializer != null) {
             return deserializeBasic(message, internalDeserializer);
+        } else if (type.isEnum()) {
+            return deserializeEnum(message, type);
         }
-        return serializer.deserialize(message, type);
+        throw new IllegalArgumentException(String.format("Deserializer not found for type: '%s'", type));
     }
 
     @SuppressWarnings("unchecked")
-    private <TMessage>  TMessage deserializeBasic(final byte[] message,
+    private <TMessage> TMessage deserializeEnum(final byte[] message, Class<TMessage> type) {
+        @SuppressWarnings("rawtypes")
+        final Object deserialized = Enum.valueOf((Class) type, new String(message));
+        return (TMessage) deserialized;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <TMessage> TMessage deserializeBasic(final byte[] message,
             final Function<byte[], Object> internalDeserializer) {
         try {
             final Object deserialized = internalDeserializer.apply(message);
@@ -82,21 +97,42 @@ final class InternalSerializer implements MessageSerializer {
 
     @Override
     public <TMessage> String contentTypeOf(final Class<TMessage> messageType) {
-        if (messageType == byte[].class) {
-            return null;
-        } else if (shouldDeserializeToString(messageType)) {
-            return "text/plain";
+        if (serializer.supports(messageType)) {
+            return serializer.contentTypeOf(messageType);
+        } else if (messageType == byte[].class) {
+            return OCTET_STREAM.type();
         }
-        return serializer.contentTypeOf(messageType);
+        return "text/plain";
     }
 
     @Override
     public <TMessage> String encodingOf(final Class<TMessage> messageType) {
-        if (messageType == byte[].class) {
+        if (serializer.supports(messageType)) {
+            return serializer.encodingOf(messageType);
+        } else if (messageType == byte[].class || messageType == Byte[].class) {
             return null;
-        } else if (shouldDeserializeToString(messageType)) {
-            return "UTF-8";
         }
-        return serializer.encodingOf(messageType);
+        return encoding;
+    }
+
+    @Override
+    public boolean supports(final Class<?> type) {
+        return true;
+    }
+
+    private static byte[] toPrimitiveArray(final Byte[] bytes) {
+        final byte[] results = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            results[i] = bytes[i] != null ? bytes[i] : 0;
+        }
+        return results;
+    }
+
+    private static Byte[] toObjectArray(final byte[] bytes) {
+        final Byte[] results = new Byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            results[i] = bytes[i];
+        }
+        return results;
     }
 }

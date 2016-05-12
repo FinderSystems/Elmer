@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.Type;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -54,7 +53,7 @@ public final class GsonMessageSerializer implements MessageSerializer {
     }
 
     @Override
-    public <TMessage> TMessage deserialize(final byte[] message, Type type) {
+    public <TMessage> TMessage deserialize(final byte[] message, Class<TMessage> type) {
         try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(message);
                 final Reader reader = new InputStreamReader(inputStream, encoding)) {
             return gson.fromJson(reader, type);

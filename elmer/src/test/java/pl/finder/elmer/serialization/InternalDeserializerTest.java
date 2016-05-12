@@ -3,7 +3,9 @@ package pl.finder.elmer.serialization;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static pl.finder.elmer.util.AssertionBuilder.makeAssertion;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -14,6 +16,7 @@ import org.mockito.Mockito;
 
 import pl.finder.elmer.SerializationException;
 import pl.finder.elmer.model.Message1;
+import pl.finder.elmer.model.TestEnum;
 import pl.finder.elmer.util.AssertionBuilder.MessageDeserializationAssertion;
 import pl.finder.elmer.util.AssertionBuilder.MessageDeserializationErrorAssertion;
 import pl.finder.elmer.util.AssertionBuilder.MessageSerializationAssertion;
@@ -43,12 +46,13 @@ public class InternalDeserializerTest {
         final MessageSerializer decorated = mock(MessageSerializer.class);
         final MessageSerializer internalSerializer = InternalSerializer.decorate(decorated);
         final Message1 message = Message1.of(1, "test");
+        when(decorated.supports(Message1.class)).thenReturn(true);
 
         // when
         internalSerializer.serialize(message);
 
         // then
-        verify(decorated, Mockito.times(1)).serialize(message);
+        verify(decorated, times(1)).serialize(message);
     }
 
     @Test
@@ -57,6 +61,7 @@ public class InternalDeserializerTest {
         final MessageSerializer decorated = mock(MessageSerializer.class);
         final MessageSerializer internalSerializer = InternalSerializer.decorate(decorated);
         final byte[] message = new byte[0];
+        when(decorated.supports(Message1.class)).thenReturn(true);
 
         // when
         internalSerializer.deserialize(message, Message1.class);
@@ -71,6 +76,7 @@ public class InternalDeserializerTest {
         // given
         final MessageSerializer decorated = mock(MessageSerializer.class);
         final MessageSerializer internalSerializer = InternalSerializer.decorate(decorated);
+        when(decorated.supports(Message1.class)).thenReturn(true);
 
         // when
         final Object result = internalSerializer.deserialize(assertion.message(), assertion.type());
@@ -85,6 +91,10 @@ public class InternalDeserializerTest {
                     .thatMessage("byte message".getBytes())
                     .deserializedTo(byte[].class)
                     .returns("byte message".getBytes()),
+                makeAssertion()
+                    .thatMessage(new byte[] {1, 2, 3})
+                    .deserializedTo(Byte[].class)
+                    .returns(new Byte[] {1, 2, 3}),
                 makeAssertion()
                     .thatMessage("text message")
                     .deserializedTo(String.class)
@@ -146,6 +156,10 @@ public class InternalDeserializerTest {
                     .deserializedTo(Boolean.class)
                     .returns(false),
                 makeAssertion()
+                    .thatMessage("B")
+                    .deserializedTo(TestEnum.class)
+                    .returns(TestEnum.B),
+                makeAssertion()
                     .thatMessage(new byte[0])
                     .deserializedTo(Message1.class)
                     .returns(null)
@@ -158,6 +172,7 @@ public class InternalDeserializerTest {
             // given
             final MessageSerializer decorated = mock(MessageSerializer.class);
             final MessageSerializer internalSerializer = InternalSerializer.decorate(decorated);
+            when(decorated.supports(Message1.class)).thenReturn(true);
 
             // when
             final byte[] result = internalSerializer.serialize(assertion.message());
@@ -171,6 +186,12 @@ public class InternalDeserializerTest {
                     makeAssertion()
                         .thatObject("byte message".getBytes())
                         .onSerializationReturns("byte message".getBytes()),
+                    makeAssertion()
+                        .thatObject(new Byte[] {1, 2, 3})
+                        .onSerializationReturns(new byte[] {1, 2, 3}),
+                    makeAssertion()
+                        .thatObject(new Byte[] {1, 2, null})
+                        .onSerializationReturns(new byte[] {1, 2, 0}),
                     makeAssertion()
                         .thatObject("text message")
                         .onSerializationReturns("text message".getBytes()),
@@ -217,82 +238,85 @@ public class InternalDeserializerTest {
                         .thatObject(new Boolean(false))
                         .onSerializationReturns("false".getBytes()),
                     makeAssertion()
+                        .thatObject(TestEnum.C)
+                        .onSerializationReturns("C".getBytes()),
+                    makeAssertion()
                         .thatObject(Message1.of(1, "test"))
                         .onSerializationReturns(null)
             };
     }
 
-        @Test
-        @Parameters(method = "messageDeserializationErrorAssertions")
-        public void shouldThrowDetailedExceptionOnDeserializationInvalidInputToNumber(
-                final MessageDeserializationErrorAssertion<?> assertion) {
-            // given
-            final MessageSerializer decorated = mock(MessageSerializer.class);
-            final MessageSerializer internalSerializer = InternalSerializer.decorate(decorated);
+    @Test
+    @Parameters(method = "messageDeserializationErrorAssertions")
+    public void shouldThrowDetailedExceptionOnDeserializationInvalidInputToNumber(
+            final MessageDeserializationErrorAssertion<?> assertion) {
+        // given
+        final MessageSerializer decorated = mock(MessageSerializer.class);
+        final MessageSerializer internalSerializer = InternalSerializer.decorate(decorated);
 
-            // when
-            final Throwable caughtException = catchThrowable(() ->
-                internalSerializer.deserialize(assertion.message(), assertion.type()));
+        // when
+        final Throwable caughtException = catchThrowable(() ->
+            internalSerializer.deserialize(assertion.message(), assertion.type()));
 
-            // then
-            assertThat(caughtException)
-                .isNotNull()
-                .isInstanceOf(assertion.expectedException())
-                .hasMessage(assertion.expectedMessage());
-        }
+        // then
+        assertThat(caughtException)
+            .isNotNull()
+            .isInstanceOf(assertion.expectedException())
+            .hasMessage(assertion.expectedMessage());
+    }
 
-        static MessageDeserializationErrorAssertion<?>[] messageDeserializationErrorAssertions() {
-            return new MessageDeserializationErrorAssertion[] {
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(int.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(Integer.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(short.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(Short.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(long.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(Long.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(float.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(Float.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(double.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number"),
-                    makeAssertion()
-                        .thatMessage("test")
-                        .deserializedTo(Double.class)
-                        .throwsException(SerializationException.class,
-                                "Message: 'test' has invalid format - expected number")
-            };
-        }
+    static MessageDeserializationErrorAssertion<?>[] messageDeserializationErrorAssertions() {
+        return new MessageDeserializationErrorAssertion[] {
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(int.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(Integer.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(short.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(Short.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(long.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(Long.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(float.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(Float.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(double.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number"),
+                makeAssertion()
+                    .thatMessage("test")
+                    .deserializedTo(Double.class)
+                    .throwsException(SerializationException.class,
+                            "Message: 'test' has invalid format - expected number")
+        };
+    }
 }

@@ -1,6 +1,5 @@
 package pl.finder.elmer.util;
 
-import java.lang.reflect.Type;
 import java.time.Duration;
 
 import lombok.AccessLevel;
@@ -89,7 +88,7 @@ public final class AssertionBuilder {
     public static final class MessageAssertionBuilder {
         private final byte[] message;
 
-        public MessageDeserializationAssertionBuilder deserializedTo(final Type type) {
+        public MessageDeserializationAssertionBuilder deserializedTo(final Class<?> type) {
             return new MessageDeserializationAssertionBuilder(message, type);
         }
     }
@@ -97,7 +96,7 @@ public final class AssertionBuilder {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class MessageDeserializationAssertionBuilder {
         private final byte[] message;
-        private final Type type;
+        private final Class<?> type;
 
         public MessageDeserializationAssertion returns(final Object results) {
             return new MessageDeserializationAssertion(message, type, results);
@@ -114,7 +113,7 @@ public final class AssertionBuilder {
     @Accessors(fluent = true)
     public static final class MessageDeserializationAssertion {
         private final byte[] message;
-        private final Type type;
+        private final Class<?> type;
         private final Object expectedResult;
 
         @Override
@@ -128,7 +127,7 @@ public final class AssertionBuilder {
     @Accessors(fluent = true)
     public static final class MessageDeserializationErrorAssertion<T extends Throwable> {
         private final byte[] message;
-        private final Type type;
+        private final Class<?> type;
         private final Class<T> expectedException;
         private final String expectedMessage;
 
