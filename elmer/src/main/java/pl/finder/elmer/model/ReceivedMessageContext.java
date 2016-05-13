@@ -6,7 +6,11 @@ public interface ReceivedMessageContext {
 
     long deliveryTag();
 
-    byte[] body();
+    String consumerTag();
+
+    String exchange();
+
+    String routingKey();
 
     void confirm() throws ChannelException;
 

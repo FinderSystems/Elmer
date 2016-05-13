@@ -7,8 +7,9 @@ import pl.finder.elmer.model.Message;
  *
  * @param <TMessageBody> type of message body
  */
-@FunctionalInterface
 public interface BasicMessageConsumer<TMessageBody> {
 
     void onMessage(Message<TMessageBody> message);
+
+    Class<TMessageBody> messageType();
 }

@@ -1,5 +1,6 @@
 package pl.finder.elmer.model;
 
+import java.time.Instant;
 import java.util.Map;
 
 import lombok.AccessLevel;
@@ -15,21 +16,16 @@ import com.google.common.collect.ImmutableMap;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Accessors(fluent = true)
+@Getter
 @EqualsAndHashCode
 @ToString
 public final class Message<TBody> {
-    @Getter
     private final String id;
-    @Getter
     private final TBody body;
-    @Getter
     private final String replyTo;
-    @Getter
     private final String correlationId;
-    @Getter
-    private final String routingKey;
-    @Getter
     private final Map<String, String> headers;
+    private final Instant timestamp;
 
     public static <T> Message.Builder<T> builder() {
         return new Builder<>();
@@ -47,13 +43,13 @@ public final class Message<TBody> {
         private T body;
         private String replyTo;
         private String correlationId;
-        private String routingKey;
         private Map<String, String> headers;
+        private Instant timestamp;
 
         public Message<T> build() {
             final Map<String, String> messageHeaders = headers != null ?
                     ImmutableMap.copyOf(headers) : ImmutableMap.of();
-            return new Message<>(id, body, replyTo, correlationId, routingKey, messageHeaders);
+            return new Message<>(id, body, replyTo, correlationId, messageHeaders, timestamp);
         }
     }
 }

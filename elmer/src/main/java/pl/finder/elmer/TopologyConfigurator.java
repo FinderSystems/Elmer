@@ -3,6 +3,8 @@ package pl.finder.elmer;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import pl.finder.elmer.model.DeleteExchangeOptions;
@@ -16,6 +18,9 @@ import pl.finder.elmer.model.QueueDefinition;
  * Configures topology.
  */
 public interface TopologyConfigurator {
+    // TODO change API to async
+
+    Future<Void> delareExchangeAsync(ExchangeDefinition exchange);
 
     /**
      * Creates exchange if not exists.
@@ -23,8 +28,21 @@ public interface TopologyConfigurator {
      * @param exchange exchange to create
      * @return self
      */
-    TopologyConfigurator declareExchange(ExchangeDefinition exchange)
-        throws ChannelException;
+    default TopologyConfigurator declareExchange(final ExchangeDefinition exchange)
+        throws ChannelException {
+        Future<Void> promise = delareExchangeAsync(exchange);
+        try {
+            promise.get();
+            return this;
+        } catch (final ExecutionException e) {
+            if (e.getCause() instanceof ChannelException) {
+                throw (ChannelException) e.getCause();
+            }
+            throw new IllegalStateException("Error while declaring exchange: " + exchange, e);
+        } catch (final InterruptedException e) {
+            throw new IllegalStateException(String.format("Exchange %s declartion interrupted", exchange));
+        }
+    }
 
     /**
      * Deletes exchange.

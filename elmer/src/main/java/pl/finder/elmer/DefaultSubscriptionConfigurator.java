@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import pl.finder.elmer.consumer.BasicMessageConsumer;
 import pl.finder.elmer.consumer.MessageConsumer;
+import pl.finder.elmer.consumer.MessageConsumers;
 import pl.finder.elmer.model.ExchangeDefinition;
 import pl.finder.elmer.model.QueueDefinition;
 import pl.finder.elmer.model.Subscription;
@@ -52,16 +53,16 @@ final class DefaultSubscriptionConfigurator implements SubscriptionConfigurator 
 
         @Override
         public <TMessageBody> Subscription using(
-                final BasicMessageConsumer<TMessageBody> consumer) {
+                final BasicMessageConsumer<TMessageBody> basicConsumer) {
             final SubscriptionConfig config = SubscriptionConfig.builder()
                     .queue(queue)
                     .autoAckEnabled(autoAckEnabled)
                     .bindedExchange(bindedExchange)
                     .build();
-            checkState(config.autoAckEnabled(),
+            checkState(!config.autoAckEnabled(),
                     "Could not create subscription to BasicMessageConsumer when auto ACK is disabled");
-            final Subscription subscription = bus.<TMessageBody> subscribe(config, (message, context) ->
-                    consumer.onMessage(message));
+            final MessageConsumer<TMessageBody> consumer = MessageConsumers.from(basicConsumer);
+            final Subscription subscription = bus.<TMessageBody> subscribe(config, consumer);
             return subscription;
         }
     }

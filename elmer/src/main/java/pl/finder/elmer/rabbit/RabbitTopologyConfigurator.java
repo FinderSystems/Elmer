@@ -14,6 +14,8 @@ import static pl.finder.elmer.model.AmqpProperties.MessageTimeToLive;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -34,15 +36,22 @@ import com.rabbitmq.client.Channel;
 @Slf4j
 final class RabbitTopologyConfigurator implements TopologyConfigurator {
     private final Channel channel;
+    private final ExecutorService executor;
 
     @Override
-    public TopologyConfigurator declareExchange(final ExchangeDefinition exchange) throws ChannelException {
+    public Future<Void> delareExchangeAsync(final ExchangeDefinition exchange) {
+        return executor.<Void> submit(() -> {
+            doDeclare(exchange);
+            return null;
+        });
+    }
+
+    private void doDeclare(final ExchangeDefinition exchange) throws ChannelException {
         checkArgument(exchange != null, "Exchange definition not specified");
         try {
             debug(log, () -> String.format("Declaring: %s", exchange));
             channel.exchangeDeclare(exchange.name(), exchange.type().name().toLowerCase(), exchange.durable(),
                     exchange.autoDeletable(), exchange.internal(), argumentsOf(exchange));
-            return this;
         } catch (final IOException e) {
             throw new ChannelException("Error while creating: " + exchange, e);
         }

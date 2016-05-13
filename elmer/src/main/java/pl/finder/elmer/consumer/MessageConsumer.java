@@ -8,8 +8,9 @@ import pl.finder.elmer.model.ReceivedMessageContext;
  *
  * @param <TMessageBody> type of message body
  */
-@FunctionalInterface
-public interface MessageConsumer<TMessage> {
+public interface MessageConsumer<TMessageBody> {
 
-    void onMessage(Message<TMessage> message, ReceivedMessageContext context);
+    void onMessage(Message<TMessageBody> message, ReceivedMessageContext context);
+
+    Class<TMessageBody> messageType();
 }
