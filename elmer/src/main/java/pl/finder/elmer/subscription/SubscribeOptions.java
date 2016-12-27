@@ -1,7 +1,7 @@
 package pl.finder.elmer.subscription;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.assertj.core.util.Strings.isNullOrEmpty;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.util.function.BiConsumer;
 

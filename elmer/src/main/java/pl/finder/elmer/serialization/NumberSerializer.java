@@ -2,7 +2,7 @@ package pl.finder.elmer.serialization;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static org.assertj.core.util.Strings.isNullOrEmpty;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.nio.charset.Charset;
 import java.util.Map;

@@ -1,9 +1,9 @@
 package pl.finder.elmer.core;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static org.assertj.core.util.Strings.isNullOrEmpty;
 
 import java.time.Duration;
 import java.time.Instant;
